@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sorteo de Carro</title>
+    <link rel="stylesheet" type="text/css" href="Apuestas.css">
+</head>
+<body>
+    <header>
+        <h1>Sorteo de Carro</h1>
+    </header>
+    <section>
+        <h2>Participa en el sorteo:</h2>
+        <form action="apuestas.php" method="POST">
+            <label for="nombre">Nombre:</label>
+            <input type="text" name="nombre" required><br>
+
+            <label for="apellido">Apellido:</label>
+            <input type="text" name="apellido" required><br>
+
+            <label for="cedula">Cédula:</label>
+            <input type="text" name="cedula" required><br>
+
+            <input type="submit" value="Enviar">
+        </form>
+    </section>
+</body>
+</html>
