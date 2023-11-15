@@ -10,7 +10,7 @@
     </header>
     <section>
         <h2>Participa en el sorteo:</h2>
-        <form action="apuestas.php" method="POST">
+        <form action="procesar.php" method="POST">
             <label for="nombre">Nombre:</label>
             <input type="text" name="nombre" required><br>
 
@@ -20,8 +20,11 @@
             <label for="cedula">Cédula:</label>
             <input type="text" name="cedula" required><br>
 
-            <input type="submit" value="Enviar">
+            <input type="submit" name="submit" value="Enviar">
         </form>
+        <br>
+        <h2>Registros en la tabla:</h2>
+        <?php require_once('procesar.php'); ?>
     </section>
 </body>
 </html>
