@@ -4,66 +4,88 @@ require('fpdf.php');
 // Conectar a la base de datos
 $conexion = mysqli_connect("localhost", "root", "", "concurso") or die("Error al conectar a la base de datos");
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Recibir los datos del formulario
+// Operación Crear (INSERT)
+if (isset($_POST["submit"])) {
     $nombre = $_POST["nombre"];
     $apellido = $_POST["apellido"];
     $cedula = $_POST["cedula"];
 
-    // Validar los datos del formulario
-    if ($nombre == "" || $apellido == "" || $cedula == "") {
-        echo "Debes llenar todos los campos del formulario";
-    } else {
-        // Insertar los datos en la tabla
+    if ($nombre != "" && $apellido != "" && $cedula != "") {
         $consulta = "INSERT INTO consumidores (nombre, apellido, cedula) VALUES ('$nombre', '$apellido', '$cedula')";
         $resultado = mysqli_query($conexion, $consulta) or die("Error al insertar los datos en la base de datos");
+    } else {
+        echo "Debes llenar todos los campos del formulario";
     }
 }
-// Crear un objeto FPDF
-$pdf = new FPDF();
-$pdf->AddPage();
 
-// Configurar fuentes y colores
-$pdf->SetFont('Arial', 'B', 16);
-$pdf->SetFillColor(200, 200, 200);
-$pdf->Cell(40, 10, 'Nombre', 1, 0, 'C', 1);
-$pdf->Cell(40, 10, 'Apellido', 1, 0, 'C', 1);
-$pdf->Cell(40, 10, 'Cedula', 1, 1, 'C', 1);
+// Operación Eliminar (DELETE)
+if (isset($_GET['eliminar'])) {
+    $nombre_a_eliminar = $_GET['eliminar'];
+    $consulta_eliminar = "DELETE FROM consumidores WHERE nombre = '$nombre_a_eliminar'";
+    $resultado_eliminar = mysqli_query($conexion, $consulta_eliminar);
+}
 
-// Mostrar registros en la tabla "consumidores"
-$consulta = "SELECT * FROM consumidores";
-$resultado = mysqli_query($conexion, $consulta) or die("Error al consultar la base de datos");
+// Operación Actualizar (UPDATE)
+if (isset($_POST['actualizar'])) {
+    $cedula_original = $_POST['cedula_original'];
+    $nueva_cedula = $_POST['nueva_cedula'];
 
-echo "<h2>Registros en la tabla:</h2>";
+    $consulta_actualizar = "UPDATE consumidores SET cedula = '$nueva_cedula' WHERE cedula = '$cedula_original'";
+    $resultado_actualizar = mysqli_query($conexion, $consulta_actualizar);
+}
+
+// Función para generar PDF con datos de la tabla
+function generarPDF($conexion) {
+    $pdf = new FPDF();
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', 'B', 16);
+    $pdf->SetFillColor(200, 200, 200);
+
+    $consulta = "SELECT * FROM consumidores";
+    $resultado = mysqli_query($conexion, $consulta) or die("Error al consultar la base de datos");
+
+    while ($fila = mysqli_fetch_array($resultado)) {
+        $pdf->Cell(40, 10, $fila['nombre'], 1, 0, 'C');
+        $pdf->Cell(40, 10, $fila['apellido'], 1, 0, 'C');
+        $pdf->Cell(40, 10, $fila['cedula'], 1, 1, 'C');
+        $pdf->Ln();
+    }
+
+    $pdf->Output();
+}
+
+// Operación Leer (SELECT) y Generar PDF
+generarPDF($conexion);
+
+// Obtener registros de la base de datos para mostrar en la tabla HTML
+$consulta_mostrar = "SELECT * FROM consumidores";
+$resultado_mostrar = mysqli_query($conexion, $consulta_mostrar) or die("Error al consultar la base de datos");
 
 echo "<table border='1'>
         <tr>
             <th>Nombre</th>
             <th>Apellido</th>
             <th>Cédula</th>
+            <th>Acciones</th>
         </tr>";
 
-while ($fila = mysqli_fetch_array($resultado)) {
+while ($fila = mysqli_fetch_array($resultado_mostrar)) {
     echo "<tr>
             <td>" . $fila['nombre'] . "</td>
             <td>" . $fila['apellido'] . "</td>
             <td>" . $fila['cedula'] . "</td>
+            <td>
+                <a href='procesar.php?eliminar=" . $fila['nombre'] . "'>Eliminar</a>
+                <form action='index.php' method='POST'>
+                    <input type='hidden' name='cedula_original' value='" . $fila['cedula'] . "'>
+                    <input type='text' name='nueva_cedula' placeholder='Nueva Cédula'>
+                    <input type='submit' name='actualizar' value='Actualizar'>
+                </form>
+            </td>
         </tr>";
 }
 
 echo "</table>";
-
-$nombre_a_eliminar = "jorge"; // Cambia esto por el nombre que quieras eliminar
-
-$consulta_eliminar = "DELETE FROM consumidores WHERE nombre = '$nombre_a_eliminar'";
-$resultado_eliminar = mysqli_query($conexion, $consulta_eliminar);
-
-$cedula_original = "123456";
-$nueva_cedula = "1010765412";
-
-// Consulta de actualización
-$consulta_actualizar = "UPDATE consumidores SET cedula = '$nueva_cedula' WHERE cedula = '$cedula_original'";
-$resultado_actualizar = mysqli_query($conexion, $consulta_actualizar);
 
 // Cerrar la conexión
 mysqli_close($conexion);
